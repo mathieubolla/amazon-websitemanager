@@ -2,7 +2,6 @@ package com.mathieubolla;
 
 import java.io.File;
 import java.util.Date;
-import java.util.Queue;
 
 import javax.inject.Inject;
 
@@ -11,65 +10,55 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.mathieubolla.io.DirectoryScanner;
+import com.mathieubolla.processing.AmazonS3Processor;
+import com.mathieubolla.processing.DeleteUnit;
+import com.mathieubolla.processing.UploadUnit;
+import com.mathieubolla.ui.SwingUi;
 
 public class ModularUpload {
 	private Date date = new Date();
 	private final DirectoryScanner directoryScanner;
 	private final AmazonS3 amazonS3;
+	private final AmazonS3Processor amazonS3Processor;
+	private final SwingUi swingUi;
 	
 	@Inject
-	public ModularUpload(DirectoryScanner directoryScanner, AmazonS3 amazonS3) {
+	public ModularUpload(DirectoryScanner directoryScanner, AmazonS3 amazonS3, AmazonS3Processor amazonS3Processor, SwingUi swingUi) {
 		this.directoryScanner = directoryScanner;
 		this.amazonS3 = amazonS3;
+		this.amazonS3Processor = amazonS3Processor;
+		this.swingUi = swingUi;
 	}
 	
-	public void process(final Queue<WorkUnit> toDos, final UploadConfiguration configuration) throws InterruptedException {
+	public void process(final UploadConfiguration configuration) {
 		if (configuration.isClearBucketBeforeUpload()) {
-			System.out.println("Will clear "+configuration.getBucketName());
-			clearBucket(configuration.getBucketName(), toDos);
+			clearBucket(configuration.getBucketName());
 		}
-		System.out.println("Will upload "+configuration.getBaseDirectory()+" to "+configuration.getBucketName());
-		upload(configuration.getBaseDirectory(), configuration.getBucketName(), toDos);
+		upload(configuration.getBaseDirectory(), configuration.getBucketName());
 		
-		System.out.println("Last chance to cancel...");
-		Thread.sleep(5000);
-		System.out.println("Go!");
-		
-		processQueue(toDos);
+		amazonS3Processor.processQueue();
 	}
 	
-	private void processQueue(final Queue<WorkUnit> toDos) {
-		for (int i = 0; i < 10; i++) {
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					WorkUnit toDo = null;
-					do {
-						toDo = toDos.poll();
-						if (toDo != null) {
-							toDo.doJob(amazonS3);
-						}
-					} while (toDo != null);
-				}
-			}).start();
-		}
-	}
-	
-	private void clearBucket(String bucket, Queue<WorkUnit> toDos) {
+	private void clearBucket(String bucket) {
 		String nextMarker = null;
 		do {
 			ObjectListing listObjects = amazonS3.listObjects(new ListObjectsRequest().withBucketName(bucket).withMarker(nextMarker));
 			nextMarker = listObjects.getNextMarker();
 			for (S3ObjectSummary summary : listObjects.getObjectSummaries()) {
-				toDos.add(new DeleteUnit(bucket, summary.getKey()));
+				amazonS3Processor.queueTask(new DeleteUnit(bucket, summary.getKey()));
 			}
 		} while (nextMarker != null);
 	}
 
-	private void upload(String baseDir, final String bucket, final Queue<WorkUnit> toDos) {
+	private void upload(String baseDir, final String bucket) {
 		for (File file : directoryScanner.scanRegularFiles(new File(baseDir))) {
 			String key = file.getAbsolutePath().replaceFirst(baseDir, "");
-			toDos.add(new UploadUnit(bucket, key, file, date));
+			amazonS3Processor.queueTask(new UploadUnit(bucket, key, file, date));
 		}
+	}
+
+	public void upload() {
+		UploadConfiguration configuration = swingUi.configure();
+		process(configuration);
 	}
 }

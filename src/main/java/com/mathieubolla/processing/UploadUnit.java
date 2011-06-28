@@ -1,4 +1,4 @@
-package com.mathieubolla;
+package com.mathieubolla.processing;
 
 import java.io.File;
 import java.util.Date;
@@ -9,7 +9,7 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 
-class UploadUnit extends WorkUnit {
+public class UploadUnit extends WorkUnit {
 	String bucket;
 	String key;
 	File file;

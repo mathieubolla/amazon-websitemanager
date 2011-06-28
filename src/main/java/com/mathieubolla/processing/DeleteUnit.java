@@ -1,9 +1,9 @@
-package com.mathieubolla;
+package com.mathieubolla.processing;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 
-class DeleteUnit extends WorkUnit {
+public class DeleteUnit extends WorkUnit {
 	String bucket;
 	String key;
 	
