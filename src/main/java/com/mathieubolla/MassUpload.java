@@ -4,6 +4,8 @@ import static com.google.inject.name.Names.named;
 
 import java.io.File;
 import java.util.Date;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.inject.Named;
 
@@ -15,6 +17,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Provides;
+import com.mathieubolla.processing.WorkUnit;
 import com.mathieubolla.ui.BatchUi;
 import com.mathieubolla.ui.SwingUi;
 import com.mathieubolla.ui.Ui;
@@ -49,6 +52,7 @@ public class MassUpload {
 		@Override
 		protected final void configure() {
 			bindConstant().annotatedWith(named("ec2credentials")).to(System.getProperty("user.home") + "/.ec2/credentials.properties");
+			bind(Queue.class).toInstance(new ConcurrentLinkedQueue<WorkUnit>());
 		}
 		
 		protected abstract void configureSpecialized();

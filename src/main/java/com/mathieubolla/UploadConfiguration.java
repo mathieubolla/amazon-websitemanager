@@ -33,7 +33,7 @@ public class UploadConfiguration {
 		return "Will upload " + baseDirectory + " on " + bucketName + ". Will "+(clearBucketBeforeUpload ? "" : "not ")+"clear it before uploading.";
 	}
 	
-	UploadUnit uploadUnitFor(File file, Date date) {
+	public UploadUnit uploadUnitFor(File file, Date date) {
 		String key = file.getAbsolutePath().replaceFirst(baseDirectory.getAbsolutePath(), "");
 		return new UploadUnit(bucketName, key, file, date);
 	}
