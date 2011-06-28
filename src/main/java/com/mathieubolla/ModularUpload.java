@@ -37,7 +37,7 @@ public class ModularUpload {
 	private void clearBucket(UploadConfiguration configuration) {
 		if (configuration.isClearBucketBeforeUpload()) {
 			for (S3ObjectSummary summary : bucketListing.listObjects(configuration.getBucketName())) {
-				s3Scanner.queueTask(new DeleteUnit(summary.getBucketName(), summary.getKey()));
+				s3Scanner.queueTask(new DeleteUnit(summary));
 			}
 		}
 	}

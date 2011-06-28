@@ -9,12 +9,13 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.mathieubolla.processing.WorkUnit;
 
 public class S3Scanner {
-	private final Queue<WorkUnit> toDos = new ConcurrentLinkedQueue<WorkUnit>();
+	private final Queue<WorkUnit> toDos;
 	private final AmazonS3 amazonS3;
 	
 	@Inject
 	public S3Scanner(AmazonS3 amazonS3) {
 		this.amazonS3 = amazonS3;
+		this.toDos = new ConcurrentLinkedQueue<WorkUnit>();
 	}
 	
 	public void queueTask(WorkUnit task) {
