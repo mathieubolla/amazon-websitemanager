@@ -53,6 +53,7 @@ public class MassUpload {
 		protected final void configure() {
 			bindConstant().annotatedWith(named("ec2credentials")).to(System.getProperty("user.home") + "/.ec2/credentials.properties");
 			bind(Queue.class).toInstance(new ConcurrentLinkedQueue<WorkUnit>());
+			configureSpecialized();
 		}
 		
 		protected abstract void configureSpecialized();
