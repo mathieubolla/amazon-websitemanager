@@ -8,6 +8,8 @@ import com.amazonaws.services.s3.internal.Mimetypes;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.mathieubolla.io.Md5Summer;
+import com.mathieubolla.io.S3KeyCache;
 
 public class UploadUnit extends WorkUnit {
 	String bucket;
@@ -23,7 +25,7 @@ public class UploadUnit extends WorkUnit {
 	}
 	
 	@Override
-	public void doJob(AmazonS3 s3) {
+	public void doJob(AmazonS3 s3, S3KeyCache cache, Md5Summer md5) {
 		String mime = Mimetypes.getInstance().getMimetype(file);
 		
 		PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, key, file);
@@ -33,6 +35,10 @@ public class UploadUnit extends WorkUnit {
 		objectMetadata.setContentType(mime);
 		objectMetadata.setLastModified(lastChangeDate);
 		
+		if (cache.get(bucket, key).getETag().equals(md5.hash(file))) {
+			System.out.println("Cache hit: Not uploading "+key);
+			return;
+		}
 		s3.putObject(putObjectRequest.withCannedAcl(CannedAccessControlList.PublicRead).withMetadata(objectMetadata));
 		
 		System.out.println("Successfully sent "+key+".");

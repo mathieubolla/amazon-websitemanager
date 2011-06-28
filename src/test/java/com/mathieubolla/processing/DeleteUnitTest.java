@@ -19,7 +19,7 @@ public class DeleteUnitTest {
 		
 		DeleteUnit deleteUnit = new DeleteUnit(mockS3ObjectSummary);
 		
-		deleteUnit.doJob(mockAmazonS3);
+		deleteUnit.doJob(mockAmazonS3, null, null);
 		
 		verify(mockAmazonS3).deleteObject("bucket", "key");
 	}

@@ -20,13 +20,17 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.mathieubolla.UploadConfiguration;
 import com.mathieubolla.io.DirectoryScanner;
+import com.mathieubolla.io.Md5Summer;
+import com.mathieubolla.io.S3KeyCache;
 import com.mathieubolla.io.S3Scanner;
 
 public class S3ProcessorTest {
 	S3Processor s3Processor;
 	S3Scanner mockS3Scanner;
 	DirectoryScanner mockDirectoryScanner;
+	S3KeyCache mockS3KeyCache;
 	AmazonS3 mockAmazonS3;
+	Md5Summer mockMd5Summer;
 	Queue<WorkUnit> mockQueue;
 	UploadConfiguration mockUploadConfiguration;
 
@@ -37,9 +41,10 @@ public class S3ProcessorTest {
 		mockDirectoryScanner = mock(DirectoryScanner.class);
 		mockAmazonS3 = mock(AmazonS3.class);
 		mockQueue = mock(Queue.class);
+		mockMd5Summer = mock(Md5Summer.class);
 		mockUploadConfiguration = mock(UploadConfiguration.class);
-		s3Processor = new S3Processor(mockAmazonS3, mockS3Scanner,
-				mockDirectoryScanner, mockQueue);
+		mockS3KeyCache = mock(S3KeyCache.class);
+		s3Processor = new S3Processor(mockAmazonS3, mockS3Scanner, mockS3KeyCache, mockMd5Summer, mockDirectoryScanner, mockQueue);
 	}
 
 	@Test
@@ -86,7 +91,7 @@ public class S3ProcessorTest {
 
 	@Test(timeout = 1000)
 	public void shouldProcessQueueWith10Threads() {
-		s3Processor = new S3Processor(mockAmazonS3, mockS3Scanner, mockDirectoryScanner, buildNDependentTasks(10));
+		s3Processor = new S3Processor(mockAmazonS3, mockS3Scanner, mockS3KeyCache, mockMd5Summer, mockDirectoryScanner, buildNDependentTasks(10));
 
 		s3Processor.processQueue();
 	}
@@ -103,7 +108,7 @@ public class S3ProcessorTest {
 	private WorkUnit lockNThreadsTask(final AtomicInteger lock, final int n) {
 		return new WorkUnit() {
 			@Override
-			public void doJob(AmazonS3 s3) {
+			public void doJob(AmazonS3 s3, S3KeyCache cache, Md5Summer md5) {
 				synchronized (lock) {
 					if(lock.incrementAndGet() < n) {
 						try {

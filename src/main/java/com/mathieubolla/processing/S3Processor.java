@@ -12,6 +12,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.mathieubolla.UploadConfiguration;
 import com.mathieubolla.io.DirectoryScanner;
+import com.mathieubolla.io.Md5Summer;
+import com.mathieubolla.io.S3KeyCache;
 import com.mathieubolla.io.S3Scanner;
 
 public class S3Processor {
@@ -19,11 +21,15 @@ public class S3Processor {
 	private final AmazonS3 amazonS3;
 	private final S3Scanner s3Scanner;
 	private final DirectoryScanner directoryScanner;
+	private final S3KeyCache cache;
+	private final Md5Summer md5;
 	
 	@Inject
-	public S3Processor(AmazonS3 amazonS3, S3Scanner s3Scanner, DirectoryScanner directoryScanner, Queue<WorkUnit> queue) {
+	public S3Processor(AmazonS3 amazonS3, S3Scanner s3Scanner, S3KeyCache cache, Md5Summer md5, DirectoryScanner directoryScanner, Queue<WorkUnit> queue) {
 		this.amazonS3 = amazonS3;
 		this.s3Scanner = s3Scanner;
+		this.cache = cache;
+		this.md5 = md5;
 		this.directoryScanner = directoryScanner;
 		this.queue = queue;
 	}
@@ -39,7 +45,7 @@ public class S3Processor {
 					do {
 						toDo = queue.poll();
 						if (toDo != null) {
-							toDo.doJob(amazonS3);
+							toDo.doJob(amazonS3, cache, md5);
 						}
 					} while (toDo != null);
 				}
