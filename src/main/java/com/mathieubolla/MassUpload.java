@@ -1,5 +1,7 @@
 package com.mathieubolla;
 
+import static com.google.inject.name.Names.named;
+
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -7,6 +9,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import javax.inject.Named;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
@@ -19,6 +22,7 @@ import com.amazonaws.services.s3.model.Bucket;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Provides;
 
 public class MassUpload {
 	public static void main(String[] args) throws Exception {
@@ -78,11 +82,16 @@ public class MassUpload {
 		return baseDir;
 	}
 	
-	private static class MainModule extends AbstractModule {
+	public static class MainModule extends AbstractModule {
 		@Override
 		protected void configure() {
+			bindConstant().annotatedWith(named("ec2credentials")).to(System.getProperty("user.home") + "/.ec2/credentials.properties");
+		}
+		
+		@Provides
+		protected AmazonS3 configureS3Client(@Named("ec2credentials") String credentialsPath) {
 			try {
-				bind(AmazonS3.class).toInstance(new AmazonS3Client(new PropertiesCredentials(new File("/home/mathieu/.ec2/credentials.properties")), new ClientConfiguration().withProtocol(Protocol.HTTP).withConnectionTimeout(5000).withMaxErrorRetry(5).withMaxConnections(10)));
+				return new AmazonS3Client(new PropertiesCredentials(new File(credentialsPath)), new ClientConfiguration().withProtocol(Protocol.HTTP).withConnectionTimeout(5000).withMaxErrorRetry(5).withMaxConnections(10));
 			} catch (Throwable t) {
 				throw new IllegalArgumentException("Can't configure Amazon S3 Client. Properties file might be missing.", t);
 			}
