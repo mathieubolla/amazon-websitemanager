@@ -21,13 +21,13 @@ public class ModularUpload {
 		this.directoryScanner = directoryScanner;
 	}
 	
-	public void process(final AmazonS3 s3, final Queue<WorkUnit> toDos, final String baseDir, final String bucket, final boolean shouldClearBucketFirst) throws InterruptedException {
-		if (shouldClearBucketFirst) {
-			System.out.println("Will clear "+bucket);
-			clearBucket(s3, bucket, toDos);
+	public void process(final AmazonS3 s3, final Queue<WorkUnit> toDos, final UploadConfiguration configuration) throws InterruptedException {
+		if (configuration.isClearBucketBeforeUpload()) {
+			System.out.println("Will clear "+configuration.getBucketName());
+			clearBucket(s3, configuration.getBucketName(), toDos);
 		}
-		System.out.println("Will upload "+baseDir+" to "+bucket);
-		upload(baseDir, s3, bucket, toDos);
+		System.out.println("Will upload "+configuration.getBaseDirectory()+" to "+configuration.getBucketName());
+		upload(configuration.getBaseDirectory(), s3, configuration.getBucketName(), toDos);
 		
 		System.out.println("Last chance to cancel...");
 		Thread.sleep(5000);
