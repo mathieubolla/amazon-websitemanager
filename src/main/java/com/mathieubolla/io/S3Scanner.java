@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.fest.util.VisibleForTesting;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -23,7 +25,7 @@ public class S3Scanner {
 		
 		String nextMarker = null;
 		do {
-			ObjectListing listObjects = amazonS3.listObjects(new ListObjectsRequest().withBucketName(bucket).withMarker(nextMarker));
+			ObjectListing listObjects = amazonS3.listObjects(instanciateRequest(bucket, nextMarker));
 			nextMarker = listObjects.getNextMarker();
 			for (S3ObjectSummary summary : listObjects.getObjectSummaries()) {
 				s3Objects.add(summary);
@@ -31,5 +33,10 @@ public class S3Scanner {
 		} while (nextMarker != null);
 		
 		return s3Objects;
+	}
+
+	@VisibleForTesting
+	protected ListObjectsRequest instanciateRequest(String bucket, String nextMarker) {
+		return new ListObjectsRequest().withBucketName(bucket).withMarker(nextMarker);
 	}
 }
