@@ -3,7 +3,6 @@ package com.mathieubolla;
 import static com.google.inject.name.Names.named;
 
 import java.io.File;
-import java.io.PrintStream;
 
 import javax.inject.Named;
 
@@ -15,19 +14,41 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Provides;
+import com.mathieubolla.ui.BatchUi;
+import com.mathieubolla.ui.SwingUi;
+import com.mathieubolla.ui.Ui;
 
 public class MassUpload {
 	public static void main(String[] args) throws Exception {
-		System.setErr(new PrintStream(new File("/dev/null")));
-
-		Guice.createInjector(new MainModule()).getInstance(ModularUpload.class).start();
+		if (System.getProperty("batch.path") != null) {
+			Guice.createInjector(new BatchModule()).getInstance(ModularUpload.class).start();
+		} else {
+			Guice.createInjector(new GraphicalModule()).getInstance(ModularUpload.class).start();
+		}
 	}
 
-	public static class MainModule extends AbstractModule {
+	public static class GraphicalModule extends BaseModule {
 		@Override
-		protected void configure() {
+		protected void configureSpecialized() {
+			bind(Ui.class).to(SwingUi.class);
+		}
+	}
+	
+	public static class BatchModule extends BaseModule {
+		@Override
+		protected void configureSpecialized() {
+			bindConstant().annotatedWith(named("batch.path")).to(System.getProperty("batch.path"));
+			bind(Ui.class).to(BatchUi.class);
+		}
+	}
+	
+	public abstract static class BaseModule extends AbstractModule {
+		@Override
+		protected final void configure() {
 			bindConstant().annotatedWith(named("ec2credentials")).to(System.getProperty("user.home") + "/.ec2/credentials.properties");
 		}
+		
+		protected abstract void configureSpecialized();
 		
 		@Provides
 		protected AmazonS3 configureS3Client(@Named("ec2credentials") String credentialsPath) {

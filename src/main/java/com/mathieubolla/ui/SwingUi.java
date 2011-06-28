@@ -11,7 +11,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
 import com.mathieubolla.UploadConfiguration;
 
-public class SwingUi {
+public class SwingUi implements Ui {
 	private final AmazonS3 amazonS3;
 
 	@Inject
@@ -39,7 +39,6 @@ public class SwingUi {
 		
 		throw new IllegalArgumentException("User choosed to abort");
 	}
-	
 	
 	private String chooseBucket(String forDirectory) {
 		List<String> options = new ArrayList<String>();

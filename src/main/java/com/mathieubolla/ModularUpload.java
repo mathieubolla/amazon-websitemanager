@@ -7,24 +7,24 @@ import javax.inject.Inject;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.mathieubolla.io.DirectoryScanner;
+import com.mathieubolla.io.S3Scanner;
 import com.mathieubolla.processing.AmazonBucketListing;
-import com.mathieubolla.processing.S3Scanner;
 import com.mathieubolla.processing.DeleteUnit;
-import com.mathieubolla.ui.SwingUi;
+import com.mathieubolla.ui.Ui;
 
 public class ModularUpload {
 	private Date date = new Date();
 	private final DirectoryScanner directoryScanner;
 	private final S3Scanner s3Scanner;
-	private final SwingUi swingUi;
+	private final Ui ui;
 	private final AmazonBucketListing bucketListing;
 	
 	@Inject
-	public ModularUpload(DirectoryScanner directoryScanner, S3Scanner s3Scanner, AmazonBucketListing bucketListing, SwingUi swingUi) {
+	public ModularUpload(DirectoryScanner directoryScanner, S3Scanner s3Scanner, AmazonBucketListing bucketListing, Ui ui) {
 		this.directoryScanner = directoryScanner;
 		this.s3Scanner = s3Scanner;
 		this.bucketListing = bucketListing;
-		this.swingUi = swingUi;
+		this.ui = ui;
 	}
 	
 	private void process(final UploadConfiguration configuration) {
@@ -49,6 +49,6 @@ public class ModularUpload {
 	}
 
 	public void start() {
-		process(swingUi.configure());
+		process(ui.configure());
 	}
 }

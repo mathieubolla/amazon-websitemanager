@@ -1,4 +1,4 @@
-package com.mathieubolla.processing;
+package com.mathieubolla.io;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.inject.Inject;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.mathieubolla.processing.WorkUnit;
 
 public class S3Scanner {
 	private final Queue<WorkUnit> toDos = new ConcurrentLinkedQueue<WorkUnit>();
