@@ -20,6 +20,8 @@ public class ModularUpload {
 	public void start(Date date) {
 		UploadConfiguration configuration = ui.configure();
 		
+		System.out.println(configuration);
+		
 		s3processor.clearBucket(configuration);
 		s3processor.uploadBucket(configuration, date);
 		s3processor.processQueue();
