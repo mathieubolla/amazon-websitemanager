@@ -24,9 +24,9 @@ public class MassUpload {
 	public static void main(String[] args) throws Exception {
 		Injector injector = Guice.createInjector(new MainModule());
 		ModularUpload upload = injector.getInstance(ModularUpload.class);
+		AmazonS3 s3 = injector.getInstance(AmazonS3.class);
 		
 		System.setErr(new PrintStream(new File("/dev/null")));
-		final AmazonS3 s3 = new AmazonS3Client(new PropertiesCredentials(new File("/home/mathieu/.ec2/credentials.properties")), new ClientConfiguration().withProtocol(Protocol.HTTP).withConnectionTimeout(5000).withMaxErrorRetry(5).withMaxConnections(10));
 		final Queue<WorkUnit> toDos = new ConcurrentLinkedQueue<WorkUnit>();
 
 		final String baseDir = chooseBaseDir() + "/";
@@ -81,7 +81,11 @@ public class MassUpload {
 	private static class MainModule extends AbstractModule {
 		@Override
 		protected void configure() {
-			
+			try {
+				bind(AmazonS3.class).toInstance(new AmazonS3Client(new PropertiesCredentials(new File("/home/mathieu/.ec2/credentials.properties")), new ClientConfiguration().withProtocol(Protocol.HTTP).withConnectionTimeout(5000).withMaxErrorRetry(5).withMaxConnections(10)));
+			} catch (Throwable t) {
+				throw new IllegalArgumentException("Can't configure Amazon S3 Client. Properties file might be missing.", t);
+			}
 		}
 	}
 }
