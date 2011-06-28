@@ -3,6 +3,7 @@ package com.mathieubolla;
 import static com.google.inject.name.Names.named;
 
 import java.io.File;
+import java.util.Date;
 
 import javax.inject.Named;
 
@@ -20,10 +21,12 @@ import com.mathieubolla.ui.Ui;
 
 public class MassUpload {
 	public static void main(String[] args) throws Exception {
+		Date startDate = new Date();
+		
 		if (System.getProperty("batch.path") != null) {
-			Guice.createInjector(new BatchModule()).getInstance(ModularUpload.class).start();
+			Guice.createInjector(new BatchModule()).getInstance(ModularUpload.class).start(startDate);
 		} else {
-			Guice.createInjector(new GraphicalModule()).getInstance(ModularUpload.class).start();
+			Guice.createInjector(new GraphicalModule()).getInstance(ModularUpload.class).start(startDate);
 		}
 	}
 

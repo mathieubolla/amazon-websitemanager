@@ -13,42 +13,38 @@ import com.mathieubolla.processing.S3Processor;
 import com.mathieubolla.ui.Ui;
 
 public class ModularUpload {
-	private Date date = new Date();
 	private final DirectoryScanner directoryScanner;
-	private final S3Processor s3Scanner;
+	private final S3Processor s3processor;
 	private final Ui ui;
-	private final S3Scanner bucketListing;
+	private final S3Scanner s3scanner;
 	
 	@Inject
-	public ModularUpload(DirectoryScanner directoryScanner, S3Processor s3Scanner, S3Scanner bucketListing, Ui ui) {
+	public ModularUpload(DirectoryScanner directoryScanner, S3Processor s3processor, S3Scanner s3scanner, Ui ui) {
 		this.directoryScanner = directoryScanner;
-		this.s3Scanner = s3Scanner;
-		this.bucketListing = bucketListing;
+		this.s3processor = s3processor;
+		this.s3scanner = s3scanner;
 		this.ui = ui;
-	}
-	
-	private void process(final UploadConfiguration configuration) {
-		clearBucket(configuration);
-		uploadBucket(configuration);
-		
-		s3Scanner.processQueue();
 	}
 	
 	private void clearBucket(UploadConfiguration configuration) {
 		if (configuration.isClearBucketBeforeUpload()) {
-			for (S3ObjectSummary summary : bucketListing.listObjects(configuration.getBucketName())) {
-				s3Scanner.queueTask(new DeleteUnit(summary));
+			for (S3ObjectSummary summary : s3scanner.listObjects(configuration.getBucketName())) {
+				s3processor.queueTask(new DeleteUnit(summary));
 			}
 		}
 	}
 
-	private void uploadBucket(UploadConfiguration configuration) {
-		for (File file : directoryScanner.scanRegularFiles(new File(configuration.getBaseDirectory()))) {
-			s3Scanner.queueTask(configuration.uploadUnitFor(file, date));
+	private void uploadBucket(UploadConfiguration configuration, Date date) {
+		for (File file : directoryScanner.scanRegularFiles(configuration.getBaseDirectory())) {
+			s3processor.queueTask(configuration.uploadUnitFor(file, date));
 		}
 	}
 
-	public void start() {
-		process(ui.configure());
+	public void start(Date date) {
+		UploadConfiguration configuration = ui.configure();
+		
+		clearBucket(configuration);
+		uploadBucket(configuration, date);
+		s3processor.processQueue();
 	}
 }

@@ -16,4 +16,17 @@ public class DeleteUnit extends WorkUnit {
 		s3.deleteObject(new DeleteObjectRequest(summary.getBucketName(), summary.getKey()));
 		System.out.println("Successfully deleted "+summary);
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof DeleteUnit) {
+			return summary.equals(((DeleteUnit)obj).summary);
+		}
+		return false;
+	}
+	
+	@Override
+	public int hashCode() {
+		return summary.hashCode();
+	}
 }

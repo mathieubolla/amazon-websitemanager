@@ -1,5 +1,6 @@
 package com.mathieubolla.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class SwingUi implements Ui {
 		
 		final boolean shouldClearBucketFirst = chooseClearBucket(baseDir, bucket);
 		
-		UploadConfiguration configuration = new UploadConfiguration(baseDir, bucket, shouldClearBucketFirst);
+		UploadConfiguration configuration = new UploadConfiguration(new File(baseDir), bucket, shouldClearBucketFirst);
 		if (confirm(configuration.toString())) {
 			return configuration;
 		}

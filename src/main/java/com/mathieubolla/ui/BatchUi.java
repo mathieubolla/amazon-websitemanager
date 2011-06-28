@@ -35,7 +35,7 @@ public class BatchUi implements Ui {
 			
 			boolean clearBucket = Boolean.parseBoolean(properties.getProperty("clearBucket", "false"));
 			
-			return new UploadConfiguration(baseDirectory, bucketName, clearBucket);
+			return new UploadConfiguration(new File(baseDirectory), bucketName, clearBucket);
 		} catch (Throwable t) {
 			throw new IllegalArgumentException("Can't load property file. Aborting.", t);
 		}
