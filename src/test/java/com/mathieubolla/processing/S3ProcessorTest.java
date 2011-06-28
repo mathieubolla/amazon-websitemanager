@@ -105,7 +105,6 @@ public class S3ProcessorTest {
 			@Override
 			public void doJob(AmazonS3 s3) {
 				synchronized (lock) {
-					System.out.println(lock);
 					if(lock.incrementAndGet() < n) {
 						try {
 							lock.wait();
