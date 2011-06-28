@@ -17,21 +17,16 @@ import com.amazonaws.Protocol;
 import com.amazonaws.auth.PropertiesCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.internal.Mimetypes;
 import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 public class MassUpload {
-	private static final Date UPLOAD_START_DATE = new Date();
+	static final Date UPLOAD_START_DATE = new Date();
 	
-	private static final AtomicLong TOTAL_SIZE_SENT = new AtomicLong(0);
-	private static final AtomicLong TOTAL_SIZE_TOSEND = new AtomicLong(0);
+	static final AtomicLong TOTAL_SIZE_SENT = new AtomicLong(0);
+	static final AtomicLong TOTAL_SIZE_TOSEND = new AtomicLong(0);
 	
 	public static void main(String[] args) throws Exception {
 		System.setErr(new PrintStream(new File("/dev/null")));
@@ -145,58 +140,5 @@ public class MassUpload {
 			}
 		}
 		return files;
-	}
-	
-	private static class DeleteUnit extends WorkUnit {
-		String bucket;
-		String key;
-		
-		public DeleteUnit(String bucket, String key) {
-			super();
-			this.bucket = bucket;
-			this.key = key;
-		}
-
-		@Override
-		public void doJob(AmazonS3 s3) {
-			s3.deleteObject(new DeleteObjectRequest(bucket, key));
-			System.out.println("Successfully deleted "+bucket+"/"+key);
-		}
-	}
-	
-	private static class UploadUnit extends WorkUnit {
-		String bucket;
-		String key;
-		File file;
-		
-		public UploadUnit(String bucket, String key, File file) {
-			this.bucket = bucket;
-			this.file = file;
-			this.key = key;
-		}
-		
-		@Override
-		public void doJob(AmazonS3 s3) {
-			String mime = Mimetypes.getInstance().getMimetype(file);
-			
-			PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, key, file);
-			
-			ObjectMetadata objectMetadata = new ObjectMetadata();
-			objectMetadata.setCacheControl("public,max-age=600");
-			objectMetadata.setContentType(mime);
-			objectMetadata.setLastModified(UPLOAD_START_DATE);
-			
-			s3.putObject(putObjectRequest.withCannedAcl(CannedAccessControlList.PublicRead).withMetadata(objectMetadata));
-			
-			long size = file.length();
-			long kbSent = size / 1024;
-			long totalKbSent = TOTAL_SIZE_SENT.addAndGet(size) / 1024;
-			double percentage = (double)Math.round((double)TOTAL_SIZE_SENT.get() / TOTAL_SIZE_TOSEND.get() * 10000) / 100;
-			System.out.println("Successfully sent "+kbSent+"kb to "+key+". Total "+totalKbSent+"kb out of "+(TOTAL_SIZE_TOSEND.get()/1024)+"kb ("+percentage+"%)");
-		}
-	}
-	
-	private abstract static class WorkUnit {
-		public abstract void doJob(AmazonS3 s3);
 	}
 }
