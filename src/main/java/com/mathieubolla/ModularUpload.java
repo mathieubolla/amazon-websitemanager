@@ -5,53 +5,46 @@ import java.util.Date;
 
 import javax.inject.Inject;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.mathieubolla.io.DirectoryScanner;
-import com.mathieubolla.processing.AmazonS3Processor;
+import com.mathieubolla.processing.AmazonBucketListing;
+import com.mathieubolla.processing.S3Scanner;
 import com.mathieubolla.processing.DeleteUnit;
 import com.mathieubolla.ui.SwingUi;
 
 public class ModularUpload {
 	private Date date = new Date();
 	private final DirectoryScanner directoryScanner;
-	private final AmazonS3 amazonS3;
-	private final AmazonS3Processor amazonS3Processor;
+	private final S3Scanner s3Scanner;
 	private final SwingUi swingUi;
+	private final AmazonBucketListing bucketListing;
 	
 	@Inject
-	public ModularUpload(DirectoryScanner directoryScanner, AmazonS3 amazonS3, AmazonS3Processor amazonS3Processor, SwingUi swingUi) {
+	public ModularUpload(DirectoryScanner directoryScanner, S3Scanner s3Scanner, AmazonBucketListing bucketListing, SwingUi swingUi) {
 		this.directoryScanner = directoryScanner;
-		this.amazonS3 = amazonS3;
-		this.amazonS3Processor = amazonS3Processor;
+		this.s3Scanner = s3Scanner;
+		this.bucketListing = bucketListing;
 		this.swingUi = swingUi;
 	}
 	
 	private void process(final UploadConfiguration configuration) {
-		if (configuration.isClearBucketBeforeUpload()) {
-			clearBucket(configuration.getBucketName());
-		}
+		clearBucket(configuration);
 		uploadBucket(configuration);
 		
-		amazonS3Processor.processQueue();
+		s3Scanner.processQueue();
 	}
 	
-	private void clearBucket(String bucket) {
-		String nextMarker = null;
-		do {
-			ObjectListing listObjects = amazonS3.listObjects(new ListObjectsRequest().withBucketName(bucket).withMarker(nextMarker));
-			nextMarker = listObjects.getNextMarker();
-			for (S3ObjectSummary summary : listObjects.getObjectSummaries()) {
-				amazonS3Processor.queueTask(new DeleteUnit(bucket, summary.getKey()));
+	private void clearBucket(UploadConfiguration configuration) {
+		if (configuration.isClearBucketBeforeUpload()) {
+			for (S3ObjectSummary summary : bucketListing.listObjects(configuration.getBucketName())) {
+				s3Scanner.queueTask(new DeleteUnit(summary.getBucketName(), summary.getKey()));
 			}
-		} while (nextMarker != null);
+		}
 	}
 
 	private void uploadBucket(UploadConfiguration configuration) {
 		for (File file : directoryScanner.scanRegularFiles(new File(configuration.getBaseDirectory()))) {
-			amazonS3Processor.queueTask(configuration.uploadUnitFor(file, date));
+			s3Scanner.queueTask(configuration.uploadUnitFor(file, date));
 		}
 	}
 

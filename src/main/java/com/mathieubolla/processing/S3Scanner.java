@@ -7,12 +7,12 @@ import javax.inject.Inject;
 
 import com.amazonaws.services.s3.AmazonS3;
 
-public class AmazonS3Processor {
+public class S3Scanner {
 	private final Queue<WorkUnit> toDos = new ConcurrentLinkedQueue<WorkUnit>();
 	private final AmazonS3 amazonS3;
 	
 	@Inject
-	public AmazonS3Processor(AmazonS3 amazonS3) {
+	public S3Scanner(AmazonS3 amazonS3) {
 		this.amazonS3 = amazonS3;
 	}
 	
