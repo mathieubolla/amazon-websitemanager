@@ -1,7 +1,9 @@
 package com.mathieubolla.processing;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Queue;
 
 import javax.inject.Inject;
@@ -27,8 +29,10 @@ public class S3Processor {
 	}
 	
 	public void processQueue() {
+		List<Thread> threads = new ArrayList<Thread>();
+		
 		for (int i = 0; i < 10; i++) {
-			new Thread(new Runnable() {
+			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					WorkUnit toDo = null;
@@ -39,7 +43,17 @@ public class S3Processor {
 						}
 					} while (toDo != null);
 				}
-			}).start();
+			});
+			threads.add(thread);
+			thread.start();
+		}
+		
+		for (Thread thread : threads) {
+			try {
+				thread.join();
+			} catch (InterruptedException e) {
+				throw new RuntimeException("Error: Was interrupted while waiting for job to get done");
+			}
 		}
 	}
 	
