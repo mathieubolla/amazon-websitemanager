@@ -38,7 +38,8 @@ public class S3ProcessorTest {
 		mockAmazonS3 = mock(AmazonS3.class);
 		mockQueue = mock(Queue.class);
 		mockUploadConfiguration = mock(UploadConfiguration.class);
-		s3Processor = new S3Processor(mockAmazonS3, mockS3Scanner, mockDirectoryScanner, mockQueue);
+		s3Processor = new S3Processor(mockAmazonS3, mockS3Scanner,
+				mockDirectoryScanner, mockQueue);
 	}
 
 	@Test
@@ -48,7 +49,6 @@ public class S3ProcessorTest {
 
 		when(mockUploadConfiguration.getBucketName()).thenReturn("bucket");
 		when(mockS3Scanner.listObjects("bucket")).thenReturn(asList(mockS3ObjectSummary));
-
 		when(mockUploadConfiguration.isClearBucketBeforeUpload()).thenReturn(true);
 
 		s3Processor.clearBucket(mockUploadConfiguration);
@@ -63,9 +63,7 @@ public class S3ProcessorTest {
 
 		when(mockUploadConfiguration.getBucketName()).thenReturn("bucket");
 		when(mockS3Scanner.listObjects("bucket")).thenReturn(asList(mockS3ObjectSummary));
-
 		when(mockUploadConfiguration.isClearBucketBeforeUpload()).thenReturn(false);
-
 		s3Processor.clearBucket(mockUploadConfiguration);
 
 		verifyNoMoreInteractions(mockQueue);
