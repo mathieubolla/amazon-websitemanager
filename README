@@ -1,0 +1,16 @@
+This is a small Java project that uploads a directory of your choice to an Amazon S3 bucket with the option to clear the bucket prior to uploading.
+It does so using sensible defaults for website serving (cache, acl, mime types), so that if the bucket is configured for website, it will work out of the box.
+
+Available options:
+- Without parameters, the system will use a basic GUI to ask for various required parameters.
+- With parameter -Dbatch.path=<path>, will load a properties file located at <path> and work headlessly.
+	Required properties are :
+		<baseDirectory>=The directory from which to load the files on local filesystem (path as string)
+		<bucketName>=The bucket which will receive the files (name as string)
+	Optional properties are :
+		<clearBucket>=Tell if the bucket will be emptied before uploading. Defaults to false. (boolean 'true' or 'false')
+
+Features:
+- Ignores dot files (usually hidden files under Unix or MacOS)
+- Sets cache and expiry at sensible defaults
+- Use 10 threads to speed up transfers and bucket clearing
