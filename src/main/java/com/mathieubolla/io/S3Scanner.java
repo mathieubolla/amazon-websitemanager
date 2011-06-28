@@ -1,41 +1,35 @@
 package com.mathieubolla.io;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.mathieubolla.processing.WorkUnit;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 public class S3Scanner {
-	private final Queue<WorkUnit> toDos;
 	private final AmazonS3 amazonS3;
-	
+
 	@Inject
 	public S3Scanner(AmazonS3 amazonS3) {
 		this.amazonS3 = amazonS3;
-		this.toDos = new ConcurrentLinkedQueue<WorkUnit>();
 	}
 	
-	public void queueTask(WorkUnit task) {
-		toDos.add(task);
-	}
-	
-	public void processQueue() {
-		for (int i = 0; i < 10; i++) {
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					WorkUnit toDo = null;
-					do {
-						toDo = toDos.poll();
-						if (toDo != null) {
-							toDo.doJob(amazonS3);
-						}
-					} while (toDo != null);
-				}
-			}).start();
-		}
+	public List<S3ObjectSummary> listObjects(String bucket) {
+		List<S3ObjectSummary> s3Objects = new ArrayList<S3ObjectSummary>();
+		
+		String nextMarker = null;
+		do {
+			ObjectListing listObjects = amazonS3.listObjects(new ListObjectsRequest().withBucketName(bucket).withMarker(nextMarker));
+			nextMarker = listObjects.getNextMarker();
+			for (S3ObjectSummary summary : listObjects.getObjectSummaries()) {
+				s3Objects.add(summary);
+			}
+		} while (nextMarker != null);
+		
+		return s3Objects;
 	}
 }

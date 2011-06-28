@@ -6,21 +6,21 @@ import java.util.Date;
 import javax.inject.Inject;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.mathieubolla.io.DirectoryScanner;
 import com.mathieubolla.io.S3Scanner;
-import com.mathieubolla.processing.AmazonBucketListing;
+import com.mathieubolla.io.DirectoryScanner;
 import com.mathieubolla.processing.DeleteUnit;
+import com.mathieubolla.processing.S3Processor;
 import com.mathieubolla.ui.Ui;
 
 public class ModularUpload {
 	private Date date = new Date();
 	private final DirectoryScanner directoryScanner;
-	private final S3Scanner s3Scanner;
+	private final S3Processor s3Scanner;
 	private final Ui ui;
-	private final AmazonBucketListing bucketListing;
+	private final S3Scanner bucketListing;
 	
 	@Inject
-	public ModularUpload(DirectoryScanner directoryScanner, S3Scanner s3Scanner, AmazonBucketListing bucketListing, Ui ui) {
+	public ModularUpload(DirectoryScanner directoryScanner, S3Processor s3Scanner, S3Scanner bucketListing, Ui ui) {
 		this.directoryScanner = directoryScanner;
 		this.s3Scanner = s3Scanner;
 		this.bucketListing = bucketListing;
