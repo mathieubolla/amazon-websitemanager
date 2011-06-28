@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.internal.Mimetypes;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.mathieubolla.io.Md5Summer;
 import com.mathieubolla.io.S3KeyCache;
 
@@ -35,7 +36,8 @@ public class UploadUnit extends WorkUnit {
 		objectMetadata.setContentType(mime);
 		objectMetadata.setLastModified(lastChangeDate);
 		
-		if (cache.get(bucket, key).getETag().equals(md5.hash(file))) {
+		S3ObjectSummary s3ObjectSummary = cache.get(bucket, key);
+		if (s3ObjectSummary != null && md5.hash(file).equals(s3ObjectSummary.getETag())) {
 			System.out.println("Cache hit: Not uploading "+key);
 			return;
 		}

@@ -8,8 +8,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.Date;
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.fest.assertions.Fail;
@@ -31,16 +29,15 @@ public class S3ProcessorTest {
 	S3KeyCache mockS3KeyCache;
 	AmazonS3 mockAmazonS3;
 	Md5Summer mockMd5Summer;
-	Queue<WorkUnit> mockQueue;
+	WorkQueue mockQueue;
 	UploadConfiguration mockUploadConfiguration;
 
 	@Before
-	@SuppressWarnings("unchecked")
 	public void setup() {
 		mockS3Scanner = mock(S3Scanner.class);
 		mockDirectoryScanner = mock(DirectoryScanner.class);
 		mockAmazonS3 = mock(AmazonS3.class);
-		mockQueue = mock(Queue.class);
+		mockQueue = mock(WorkQueue.class);
 		mockMd5Summer = mock(Md5Summer.class);
 		mockUploadConfiguration = mock(UploadConfiguration.class);
 		mockS3KeyCache = mock(S3KeyCache.class);
@@ -96,9 +93,9 @@ public class S3ProcessorTest {
 		s3Processor.processQueue();
 	}
 
-	private Queue<WorkUnit> buildNDependentTasks(int n) {
+	private WorkQueue buildNDependentTasks(int n) {
 		final AtomicInteger sharedLock = new AtomicInteger(0);
-		Queue<WorkUnit> queue = new LinkedBlockingDeque<WorkUnit>();
+		WorkQueue queue = new WorkQueue();
 		for (int i = 0; i < n; i++) {
 			queue.add(lockNThreadsTask(sharedLock, n));
 		}

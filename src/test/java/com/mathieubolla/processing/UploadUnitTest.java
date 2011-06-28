@@ -66,6 +66,21 @@ public class UploadUnitTest {
 		
 		verifyNoMoreInteractions(mockAmazonS3);
 	}
+	
+	
+	@Test
+	public void shouldNotFailOnCacheMiss() {
+		UploadUnit uploadUnit = new UploadUnit("bucket", "key", mockFile, mockDate);
+		when(mockFile.getName()).thenReturn("sample.jpg");
+		when(mockCache.get("bucket", "key")).thenReturn(null);
+		when(mockMd5Summer.hash(mockFile)).thenReturn("sameMD5Hash");
+		ArgumentCaptor<PutObjectRequest> objectRequestCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
+		
+		uploadUnit.doJob(mockAmazonS3, mockCache, mockMd5Summer);
+		
+		verify(mockAmazonS3).putObject(objectRequestCaptor.capture());
+		validate(objectRequestCaptor);
+	}
 
 	private void validate(ArgumentCaptor<PutObjectRequest> objectRequestCaptor) {
 		PutObjectRequest value = objectRequestCaptor.getValue();

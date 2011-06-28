@@ -15,6 +15,7 @@ public class DeleteUnit extends WorkUnit {
 	@Override
 	public void doJob(AmazonS3 s3, S3KeyCache cache, Md5Summer md5) {
 		s3.deleteObject(summary.getBucketName(), summary.getKey());
+		cache.clear(summary.getBucketName());
 		System.out.println("Successfully deleted "+summary);
 	}
 	

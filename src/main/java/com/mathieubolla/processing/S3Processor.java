@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Queue;
 
 import javax.inject.Inject;
 
@@ -17,7 +16,7 @@ import com.mathieubolla.io.S3KeyCache;
 import com.mathieubolla.io.S3Scanner;
 
 public class S3Processor {
-	private final Queue<WorkUnit> queue;
+	private final WorkQueue queue;
 	private final AmazonS3 amazonS3;
 	private final S3Scanner s3Scanner;
 	private final DirectoryScanner directoryScanner;
@@ -25,7 +24,7 @@ public class S3Processor {
 	private final Md5Summer md5;
 	
 	@Inject
-	public S3Processor(AmazonS3 amazonS3, S3Scanner s3Scanner, S3KeyCache cache, Md5Summer md5, DirectoryScanner directoryScanner, Queue<WorkUnit> queue) {
+	public S3Processor(AmazonS3 amazonS3, S3Scanner s3Scanner, S3KeyCache cache, Md5Summer md5, DirectoryScanner directoryScanner, WorkQueue queue) {
 		this.amazonS3 = amazonS3;
 		this.s3Scanner = s3Scanner;
 		this.cache = cache;
