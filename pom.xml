@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>amazon-websitemanager</artifactId>
+	<groupId>com.mathieu-bolla</groupId>
+	<name>Website Manager</name>
+	<organization>
+		<name>Mathieu Bolla</name>
+		<url>http://www.mathieu-bolla.com</url>
+	</organization>
+	<url>http://www.mathieu-bolla.com/websitemanager</url>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<dependencies>
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk</artifactId>
+			<version>1.2.0</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo.webstart</groupId>
+				<artifactId>webstart-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>jnlp</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<excludeTransitive>false</excludeTransitive>
+					<libPath>lib</libPath>
+					<jnlp>
+						<mainClass>com.mathieubolla.MassUpload</mainClass>
+					</jnlp>
+					<pack200>true</pack200>
+					<gzip>true</gzip>
+					<sign>
+						<keystore>fillme</keystore>
+						<keypass>fillme</keypass>
+						<storepass>fillme</storepass>
+						<storetype>jks</storetype>
+						<alias>webstart</alias>
+						<validity>365</validity>
+						
+						<dnameCn>Mathieu Bolla</dnameCn>
+						<dnameOu>www.mathieu-bolla.com</dnameOu>
+						<dnameO>www.mathieu-bolla.com</dnameO>
+						<dnameL>Paris</dnameL>
+						<dnameSt>Ile de France</dnameSt>
+						<dnameC>France</dnameC>
+						
+						<verify>true</verify>
+						<keystoreConfig>
+							<delete>true</delete>
+							<gen>true</gen>
+						</keystoreConfig>
+					</sign>
+					<unsign>true</unsign>
+				</configuration>
+			</plugin>
+		</plugins>
+    </build>
+</project>
