@@ -33,25 +33,30 @@ public class MassUpload {
 		System.setErr(new PrintStream(new File("/dev/null")));
 		final Queue<WorkUnit> toDos = new ConcurrentLinkedQueue<WorkUnit>();
 
+		UploadConfiguration configuration = configure(s3);
+		if (confirm(message(configuration))) {
+			upload.process(toDos, configuration);
+		}
+	}
+	
+	private static UploadConfiguration configure(AmazonS3 s3) {
 		final String baseDir = chooseBaseDir() + "/";
 		if (baseDir.equals("null/")) {
-			return;
+			throw new IllegalArgumentException("User choosed to abort");
 		}
 		
 		final String bucket = chooseBucket(s3, baseDir);
 		if (bucket == null) {
-			return;
+			throw new IllegalArgumentException("User choosed to abort");
 		}
 		
 		final boolean shouldClearBucketFirst = chooseClearBucket(baseDir, bucket);
 		
-		if (confirm(message(baseDir, bucket, shouldClearBucketFirst))) {
-			upload.process(toDos, new UploadConfiguration(baseDir, bucket, shouldClearBucketFirst));
-		}
+		return new UploadConfiguration(baseDir, bucket, shouldClearBucketFirst);
 	}
 	
-	private static String message(final String baseDir, final String bucket, final boolean shouldClearBucketFirst) {
-		return "Will upload " + baseDir + " on " + bucket + ". Will "+(shouldClearBucketFirst ? "" : "not ")+"clear it before uploading. Is this what you want?";
+	private static String message(UploadConfiguration configuration) {
+		return "Will upload " + configuration.getBaseDirectory() + " on " + configuration.getBucketName() + ". Will "+(configuration.isClearBucketBeforeUpload() ? "" : "not ")+"clear it before uploading. Is this what you want?";
 	}
 	
 	private static boolean confirm(String message) {
