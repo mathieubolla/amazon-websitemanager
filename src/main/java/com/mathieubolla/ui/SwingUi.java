@@ -33,7 +33,7 @@ public class SwingUi {
 		final boolean shouldClearBucketFirst = chooseClearBucket(baseDir, bucket);
 		
 		UploadConfiguration configuration = new UploadConfiguration(baseDir, bucket, shouldClearBucketFirst);
-		if (confirm(message(configuration))) {
+		if (confirm(configuration.toString())) {
 			return configuration;
 		}
 		
@@ -63,10 +63,6 @@ public class SwingUi {
 			baseDir = fileChooser.getSelectedFile().getAbsolutePath();
 		}
 		return baseDir;
-	}
-
-	private String message(UploadConfiguration configuration) {
-		return "Will upload " + configuration.getBaseDirectory() + " on " + configuration.getBucketName() + ". Will "+(configuration.isClearBucketBeforeUpload() ? "" : "not ")+"clear it before uploading. Is this what you want?";
 	}
 
 	private boolean confirm(String message) {

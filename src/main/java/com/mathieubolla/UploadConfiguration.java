@@ -1,5 +1,10 @@
 package com.mathieubolla;
 
+import java.io.File;
+import java.util.Date;
+
+import com.mathieubolla.processing.UploadUnit;
+
 public class UploadConfiguration {
 	private final String baseDirectory;
 	private final String bucketName;
@@ -21,5 +26,15 @@ public class UploadConfiguration {
 	
 	public boolean isClearBucketBeforeUpload() {
 		return clearBucketBeforeUpload;
+	}
+	
+	@Override
+	public String toString() {
+		return "Will upload " + baseDirectory + " on " + bucketName + ". Will "+(clearBucketBeforeUpload ? "" : "not ")+"clear it before uploading.";
+	}
+	
+	UploadUnit uploadUnitFor(File file, Date date) {
+		String key = file.getAbsolutePath().replaceFirst(baseDirectory, "");
+		return new UploadUnit(bucketName, key, file, date);
 	}
 }

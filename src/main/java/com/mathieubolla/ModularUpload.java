@@ -12,7 +12,6 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.mathieubolla.io.DirectoryScanner;
 import com.mathieubolla.processing.AmazonS3Processor;
 import com.mathieubolla.processing.DeleteUnit;
-import com.mathieubolla.processing.UploadUnit;
 import com.mathieubolla.ui.SwingUi;
 
 public class ModularUpload {
@@ -30,11 +29,11 @@ public class ModularUpload {
 		this.swingUi = swingUi;
 	}
 	
-	public void process(final UploadConfiguration configuration) {
+	private void process(final UploadConfiguration configuration) {
 		if (configuration.isClearBucketBeforeUpload()) {
 			clearBucket(configuration.getBucketName());
 		}
-		upload(configuration.getBaseDirectory(), configuration.getBucketName());
+		uploadBucket(configuration);
 		
 		amazonS3Processor.processQueue();
 	}
@@ -50,15 +49,13 @@ public class ModularUpload {
 		} while (nextMarker != null);
 	}
 
-	private void upload(String baseDir, final String bucket) {
-		for (File file : directoryScanner.scanRegularFiles(new File(baseDir))) {
-			String key = file.getAbsolutePath().replaceFirst(baseDir, "");
-			amazonS3Processor.queueTask(new UploadUnit(bucket, key, file, date));
+	private void uploadBucket(UploadConfiguration configuration) {
+		for (File file : directoryScanner.scanRegularFiles(new File(configuration.getBaseDirectory()))) {
+			amazonS3Processor.queueTask(configuration.uploadUnitFor(file, date));
 		}
 	}
 
-	public void upload() {
-		UploadConfiguration configuration = swingUi.configure();
-		process(configuration);
+	public void start() {
+		process(swingUi.configure());
 	}
 }

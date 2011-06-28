@@ -20,7 +20,7 @@ public class MassUpload {
 	public static void main(String[] args) throws Exception {
 		System.setErr(new PrintStream(new File("/dev/null")));
 
-		Guice.createInjector(new MainModule()).getInstance(ModularUpload.class).upload();
+		Guice.createInjector(new MainModule()).getInstance(ModularUpload.class).start();
 	}
 
 	public static class MainModule extends AbstractModule {
