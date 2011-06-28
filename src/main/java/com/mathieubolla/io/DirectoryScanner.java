@@ -4,7 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class DirectoryScanner {
+	@Inject
+	public DirectoryScanner() {
+	}
+	
 	public List<File> scanRegularFiles(File sourceDirectory) {
 		List<File> files = new ArrayList<File>();
 		for (File f : sourceDirectory.listFiles()) {

@@ -3,11 +3,9 @@ package com.mathieubolla;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -18,19 +16,15 @@ import com.amazonaws.auth.PropertiesCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.mathieubolla.io.DirectoryScanner;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 public class MassUpload {
-	static final Date UPLOAD_START_DATE = new Date();
-	
-	static final AtomicLong TOTAL_SIZE_SENT = new AtomicLong(0);
-	static final AtomicLong TOTAL_SIZE_TOSEND = new AtomicLong(0);
-	private static DirectoryScanner directoryScanner = new DirectoryScanner();
-	
 	public static void main(String[] args) throws Exception {
+		Injector injector = Guice.createInjector(new MainModule());
+		ModularUpload upload = injector.getInstance(ModularUpload.class);
+		
 		System.setErr(new PrintStream(new File("/dev/null")));
 		final AmazonS3 s3 = new AmazonS3Client(new PropertiesCredentials(new File("/home/mathieu/.ec2/credentials.properties")), new ClientConfiguration().withProtocol(Protocol.HTTP).withConnectionTimeout(5000).withMaxErrorRetry(5).withMaxConnections(10));
 		final Queue<WorkUnit> toDos = new ConcurrentLinkedQueue<WorkUnit>();
@@ -48,49 +42,10 @@ public class MassUpload {
 		final boolean shouldClearBucketFirst = chooseClearBucket(baseDir, bucket);
 		
 		if (confirm(message(baseDir, bucket, shouldClearBucketFirst))) {
-			if (shouldClearBucketFirst) {
-				System.out.println("Will clear "+bucket);
-				clearBucket(s3, bucket, toDos);
-			}
-			System.out.println("Will upload "+baseDir+" to "+bucket);
-			upload(baseDir, s3, bucket, toDos);
-			
-			System.out.println("Last chance to cancel...");
-			Thread.sleep(5000);
-			System.out.println("Go!");
-			
-			processQueue(s3, toDos);
+			upload.process(s3, toDos, baseDir, bucket, shouldClearBucketFirst);
 		}
 	}
 	
-	private static void processQueue(final AmazonS3 s3, final Queue<WorkUnit> toDos) {
-		for (int i = 0; i < 10; i++) {
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					WorkUnit toDo = null;
-					do {
-						toDo = toDos.poll();
-						if (toDo != null) {
-							toDo.doJob(s3);
-						}
-					} while (toDo != null);
-				}
-			}).start();
-		}
-	}
-	
-	private static void clearBucket(AmazonS3 s3, String bucket, Queue<WorkUnit> toDos) {
-		String nextMarker = null;
-		do {
-			ObjectListing listObjects = s3.listObjects(new ListObjectsRequest().withBucketName(bucket).withMarker(nextMarker));
-			nextMarker = listObjects.getNextMarker();
-			for (S3ObjectSummary summary : listObjects.getObjectSummaries()) {
-				toDos.add(new DeleteUnit(bucket, summary.getKey()));
-			}
-		} while (nextMarker != null);
-	}
-
 	private static String message(final String baseDir, final String bucket, final boolean shouldClearBucketFirst) {
 		return "Will upload " + baseDir + " on " + bucket + ". Will "+(shouldClearBucketFirst ? "" : "not ")+"clear it before uploading. Is this what you want?";
 	}
@@ -122,12 +77,11 @@ public class MassUpload {
 		}
 		return baseDir;
 	}
-
-	private static void upload(String baseDir, final AmazonS3 s3, final String bucket, final Queue<WorkUnit> toDos) {
-		for (File file : directoryScanner.scanRegularFiles(new File(baseDir))) {
-			String key = file.getAbsolutePath().replaceFirst(baseDir, "");
-			toDos.add(new UploadUnit(bucket, key, file));
-			TOTAL_SIZE_TOSEND.addAndGet(file.length());
+	
+	private static class MainModule extends AbstractModule {
+		@Override
+		protected void configure() {
+			
 		}
 	}
 }
