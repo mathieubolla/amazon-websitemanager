@@ -21,12 +21,14 @@ import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.mathieubolla.io.DirectoryScanner;
 
 public class MassUpload {
 	static final Date UPLOAD_START_DATE = new Date();
 	
 	static final AtomicLong TOTAL_SIZE_SENT = new AtomicLong(0);
 	static final AtomicLong TOTAL_SIZE_TOSEND = new AtomicLong(0);
+	private static DirectoryScanner directoryScanner = new DirectoryScanner();
 	
 	public static void main(String[] args) throws Exception {
 		System.setErr(new PrintStream(new File("/dev/null")));
@@ -122,23 +124,10 @@ public class MassUpload {
 	}
 
 	private static void upload(String baseDir, final AmazonS3 s3, final String bucket, final Queue<WorkUnit> toDos) {
-		for (File file : recusivelyListPlainFiles(new File(baseDir))) {
+		for (File file : directoryScanner.scanRegularFiles(new File(baseDir))) {
 			String key = file.getAbsolutePath().replaceFirst(baseDir, "");
 			toDos.add(new UploadUnit(bucket, key, file));
 			TOTAL_SIZE_TOSEND.addAndGet(file.length());
 		}
-	}
-	
-	private static List<File> recusivelyListPlainFiles(File source) {
-		List<File> files = new ArrayList<File>();
-		for (File f : source.listFiles()) {
-			if (f.isFile() && !f.getName().startsWith(".")) {
-				files.add(f);
-			}
-			if (f.isDirectory()) {
-				files.addAll(recusivelyListPlainFiles(f));
-			}
-		}
-		return files;
 	}
 }
