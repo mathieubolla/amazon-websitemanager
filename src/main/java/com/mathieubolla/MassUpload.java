@@ -42,7 +42,7 @@ public class MassUpload {
 		final boolean shouldClearBucketFirst = chooseClearBucket(baseDir, bucket);
 		
 		if (confirm(message(baseDir, bucket, shouldClearBucketFirst))) {
-			upload.process(s3, toDos, new UploadConfiguration(baseDir, bucket, shouldClearBucketFirst));
+			upload.process(toDos, new UploadConfiguration(baseDir, bucket, shouldClearBucketFirst));
 		}
 	}
 	
