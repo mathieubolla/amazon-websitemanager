@@ -40,8 +40,10 @@ public class Md5Summer {
 	private static String toHex(byte[] bytes) {
 		BigInteger bi = new BigInteger(1, bytes);
 	    String result = bi.toString(16);
+	    
 	    if (result.length() != 32) {
-	    	for (int i = 0; i <= (32 - result.length()); i++) {
+	    	int count = 32 - result.length();
+	    	for (int i = 0; i < count; i++) {
 	    		result = "0" + result;
 	    	}
 	        return result;
