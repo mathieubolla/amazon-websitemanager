@@ -40,7 +40,6 @@ public class UploadUnit extends WorkUnit {
 		
 		S3ObjectSummary s3ObjectSummary = cache.get(bucket, key);
 		if (s3ObjectSummary != null && md5.hash(file).equals(s3ObjectSummary.getETag())) {
-			System.out.println("Cache hit: Not uploading "+key);
 			return;
 		}
 		s3.putObject(putObjectRequest.withCannedAcl(CannedAccessControlList.PublicRead).withMetadata(objectMetadata));
