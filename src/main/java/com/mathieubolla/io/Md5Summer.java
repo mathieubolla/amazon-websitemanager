@@ -13,14 +13,14 @@ public class Md5Summer {
 			MessageDigest md5 = MessageDigest.getInstance("MD5");
 			
 		    ReadableByteChannel channel = new FileInputStream(file).getChannel();
-		    ByteBuffer buffer = ByteBuffer.allocateDirect(1024*1024);
+		    ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
 
 		    int numRead = 0;
 		    while (numRead >= 0) {
 		    	buffer.rewind();
 		        numRead = channel.read(buffer);
 		        buffer.rewind();
-		        if (numRead == 1024*1024) {
+		        if (numRead == 1024) {
 		        	md5.update(buffer);
 		        } else if (numRead >= 0) {
 		        	byte[] endOfFile = new byte[numRead];
@@ -40,8 +40,11 @@ public class Md5Summer {
 	private static String toHex(byte[] bytes) {
 		BigInteger bi = new BigInteger(1, bytes);
 	    String result = bi.toString(16);
-	    if (result.length() % 2 != 0) {
-	        return "0" + result;
+	    if (result.length() != 32) {
+	    	for (int i = 0; i <= (32 - result.length()); i++) {
+	    		result = "0" + result;
+	    	}
+	        return result;
 	    }
 	    return result;
 	}
