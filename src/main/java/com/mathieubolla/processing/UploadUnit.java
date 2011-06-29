@@ -3,6 +3,8 @@ package com.mathieubolla.processing;
 import java.io.File;
 import java.util.Date;
 
+import org.fest.util.VisibleForTesting;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.internal.Mimetypes;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -44,5 +46,10 @@ public class UploadUnit extends WorkUnit {
 		s3.putObject(putObjectRequest.withCannedAcl(CannedAccessControlList.PublicRead).withMetadata(objectMetadata));
 		
 		System.out.println("Successfully sent "+key+".");
+	}
+	
+	@VisibleForTesting
+	public String getKey() {
+		return key;
 	}
 }

@@ -34,7 +34,7 @@ public class UploadConfiguration {
 	}
 	
 	public UploadUnit uploadUnitFor(File file, Date date) {
-		String key = file.getAbsolutePath().replaceFirst(baseDirectory.getAbsolutePath(), "");
+		String key = file.getAbsolutePath().replaceFirst(baseDirectory.getAbsolutePath() + "/", "");
 		return new UploadUnit(bucketName, key, file, date);
 	}
 }
