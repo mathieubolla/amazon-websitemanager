@@ -17,14 +17,16 @@ public class S3KeyCache {
 		this.scanner = scanner;
 	}
 	
-	public S3ObjectSummary get(String bucket, String key) {
+	public synchronized S3ObjectSummary get(String bucket, String key) {
 		if (!cache.containsKey(bucket)) {
+			System.out.println("Filling cache!");
 			cache.put(bucket, toMap(scanner.listObjects(bucket)));
 		}
 		return cache.get(bucket).get(key);
 	}
 	
-	public void clear(String bucket) {
+	public synchronized void clear(String bucket) {
+		System.out.println("Clearing cache!");
 		cache.remove(bucket);
 	}
 	
