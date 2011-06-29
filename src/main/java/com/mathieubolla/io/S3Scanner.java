@@ -32,6 +32,8 @@ public class S3Scanner {
 			}
 		} while (nextMarker != null);
 		
+		System.out.println("Listed "+s3Objects.size()+" objects under bucket "+bucket);
+		
 		return s3Objects;
 	}
 
